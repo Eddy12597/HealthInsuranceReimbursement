@@ -1,0 +1,23 @@
+<!-- 收藏页面布局 -->
+<view class="container">
+  <!-- 标题 -->
+  <view class="title">我的收藏</view>
+  <!-- 收藏列表 -->
+  <view class="favorites-list">
+    <block wx:if="{{favorites.length > 0}}">
+      <view class="favorite-item" wx:for="{{favorites}}" wx:key="index">
+        <view class="favorite-name">{{item.name}}</view>
+        <view class="favorite-info">
+          <text>报销比例: {{item.rate}}%</text>
+          <text>自费部分: {{item.self}}%</text>
+        </view>
+        <view class="favorite-desc">{{item.desc}}</view>
+        <button bindtap="removeFavorite" data-index="{{index}}" class="remove-btn">取消收藏</button>
+      </view>
+    </block>
+    <!-- 无收藏数据提示 -->
+    <view wx:else class="empty-tip">
+      暂无收藏记录
+    </view>
+  </view>
+</view>

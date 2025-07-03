@@ -1,0 +1,16 @@
+<!-- 首页布局 -->
+<view class="container">
+  <!-- 标题 -->
+  <view class="title">医保报销查询</view>
+  <!-- 语音输入区域（根据用户要求已移除） -->
+  <!-- 
+  <view class="voice-input">
+    <button bindtap="startRecord" class="voice-btn">按住说话</button>
+    <text class="tip">点击说话查询药品报销</text>
+  </view>
+  -->
+  <!-- 药品报销查询导航按钮 -->
+  <navigator url="/pages/search/search" class="nav-btn">药品报销查询</navigator>
+  <!-- 收藏功能导航按钮 -->
+  <navigator url="/pages/favorites/favorites" class="nav-btn">我的收藏</navigator>
+</view>

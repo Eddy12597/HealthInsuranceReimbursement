@@ -1,0 +1,22 @@
+<!-- 查询页面布局 -->
+<view class="container">
+  <!-- 药品选择器 -->
+  <picker 
+    mode="selector" 
+    range="{{drugList}}" 
+    range-key="name"
+    bindchange="selectDrug"
+  >
+    <view class="picker">当前选择：{{currentType}}</view>
+  </picker>
+  <!-- 查询结果显示区域 -->
+  <view class="result-box">
+    <text class="result-title">报销比例：</text>
+    <text class="result-value">{{reimburseRate}}%</text>
+    <text class="result-title">自费部分：</text>
+    <text class="result-value">{{selfPay}}%</text>
+    <text class="result-desc">{{description}}</text>
+  </view>
+  <!-- 收藏按钮 -->
+  <button bindtap="addToFavorites" class="fav-btn">收藏结果</button>
+</view>

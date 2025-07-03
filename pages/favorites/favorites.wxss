@@ -1,0 +1,66 @@
+/* 收藏页面样式 */
+.container {
+  padding: 40rpx;
+  font-size: 40rpx;
+  color: #000;
+  background: #fff;
+}
+/* 标题样式 */
+.title {
+  font-size: 60rpx;
+  text-align: center;
+  margin-bottom: 60rpx;
+}
+/* 收藏列表样式 */
+.favorites-list {
+  width: 100%;
+}
+/* 收藏项样式 */
+.favorite-item {
+  background: #f9f9f9;
+  padding: 30rpx;
+  border-radius: 10rpx;
+  margin-bottom: 30rpx;
+}
+/* 收藏名称样式 */
+.favorite-name {
+  font-size: 48rpx;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+}
+/* 收藏信息样式 */
+.favorite-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+.favorite-info text {
+  font-size: 36rpx;
+  color: #666;
+}
+/* 收藏描述样式 */
+.favorite-desc {
+  font-size: 32rpx;
+  color: #999;
+  margin-bottom: 20rpx;
+  line-height: 1.5;
+}
+/* 删除按钮样式 */
+.remove-btn {
+  display: block;
+  width: 60%;
+  height: 80rpx;
+  line-height: 80rpx;
+  background: #F44336;
+  color: white;
+  margin: 0 auto;
+  border-radius: 10rpx;
+  font-size: 36rpx;
+}
+/* 空提示样式 */
+.empty-tip {
+  text-align: center;
+  color: #999;
+  font-size: 40rpx;
+  margin-top: 100rpx;
+}
