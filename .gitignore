@@ -12,3 +12,15 @@ $RECYCLE.BIN/
 
 # Node.js
 node_modules/
+
+*.local
+*.override
+*.swp
+*.swo
+coverage/
+.nyc_output
+
+.vscode/
+.idea
+.env
+.env.*
