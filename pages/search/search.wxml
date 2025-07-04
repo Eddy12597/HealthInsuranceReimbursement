@@ -7,10 +7,10 @@
     range-key="name"
     bindchange="selectDrug"
   >
-    <view class="picker">当前选择：{{currentType}}</view>
+    <view class="picker" style="width: 514rpx; display: block; box-sizing: border-box">当前选择：{{currentType}}</view>
   </picker>
   <!-- 查询结果显示区域 -->
-  <view class="result-box">
+  <view class="result-box" style="width: 354rpx; display: block; box-sizing: border-box">
     <text class="result-title">报销比例：</text>
     <text class="result-value">{{reimburseRate}}%</text>
     <text class="result-title">自费部分：</text>
