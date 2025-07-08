@@ -8,6 +8,7 @@ Page({
     selfPay: 0,         // 自费部分
     description: ''     // 报销描述
   },
+  
   // 页面加载时获取药品列表
   onLoad() {
     this.loadDrugList()
@@ -21,6 +22,39 @@ Page({
       currentType: drugs[0].name // 默认选中第一项
     })
     this.updateDrugDetail(drugs[0].name)
+  },
+
+  handleInput(e) {
+    const query = e.detail.value;
+    this.setData({
+      searchText: query,
+      showSuggestions: true
+    });
+    
+    if (query.length > 0) {
+      // Filter drugs that contain the query text (case insensitive)
+      const matched = this.data.drugList.filter(drug => 
+        drug.name.toLowerCase().includes(query.toLowerCase())
+      );
+      this.setData({ matchedDrugs: matched });
+    } else {
+      this.setData({ matchedDrugs: [] });
+    }
+  },
+  
+  selectSuggestion(e) {
+    const index = e.currentTarget.dataset.index;
+    const selectedDrug = this.data.matchedDrugs[index];
+    
+    this.setData({
+      currentType: selectedDrug.name,
+      searchText: selectedDrug.name,
+      showSuggestions: false,
+      // Set other drug info based on your data structure
+      reimburseRate: selectedDrug.rate,
+      selfPay: 100 - selectedDrug.rate,
+      description: selectedDrug.desc
+    });
   },
   // 更新药品详情
   updateDrugDetail(drugName) {
