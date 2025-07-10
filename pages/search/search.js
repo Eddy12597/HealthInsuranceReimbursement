@@ -1,5 +1,6 @@
 // 查询页面逻辑
-const drugApi = require('../../mock/drugApi')
+const { pinyin } = require('pinyin-pro');
+
 Page({
   data: {
     drugList: [],       // 药品列表（从API获取）
@@ -13,35 +14,62 @@ Page({
   onLoad() {
     this.loadDrugList()
   },
-  // 从模拟API获取药品列表
+  // 从真实API获取药品列表
+  /**
+   * Loads the drug list from the API and updates the component state.
+   * Makes a GET request to retrieve drug data, then updates drugList and currentType in component data.
+   * On success, also triggers update of drug details for the first item in the list.
+   * Shows error toast if the request fails.
+   */
   loadDrugList() {
-    // 实际开发中替换为：wx.request调用真实接口
-    const drugs = drugApi.getDrugList()
-    this.setData({
-      drugList: drugs,
-      currentType: drugs[0].name // 默认选中第一项
-    })
-    this.updateDrugDetail(drugs[0].name)
+    const that = this;
+    console.log("Loading Drug List")
+    wx.request({
+      url: 'http://localhost:4000/drugs',
+      method: 'GET',
+      success(res) {
+        const drugs = res.data && res.data.data ? res.data.data : [];
+        if (drugs.length > 0) {
+          // 为每个药品添加拼音首字母
+          const drugsWithPinyin = drugs.map(drug => {
+            return {
+              ...drug,
+              pinyin: pinyin(drug.name, { pattern: 'firstLetter', type: 'array' }).join('')
+            };
+          });
+          
+          that.setData({
+            drugList: drugsWithPinyin,
+            currentType: drugsWithPinyin[0].name
+          });
+          that.updateDrugDetail(drugsWithPinyin[0].name);
+        }
+      },
+      fail() {
+        wx.showToast({ title: '药品数据获取失败，请稍后再试', icon: 'none' });
+      }
+    });
   },
 
   handleInput(e) {
-    const query = e.detail.value;
+    const query = e.detail.value.toLowerCase();
     this.setData({
       searchText: query,
       showSuggestions: true
     });
     
     if (query.length > 0) {
-      // Filter drugs that contain the query text (case insensitive)
+      // 同时匹配药品名称和拼音首字母
       const matched = this.data.drugList.filter(drug => 
-        drug.name.toLowerCase().includes(query.toLowerCase())
+        drug.name.toLowerCase().includes(query) || 
+        drug.pinyin.toLowerCase().includes(query)
       );
       this.setData({ matchedDrugs: matched });
     } else {
       this.setData({ matchedDrugs: [] });
     }
   },
-  
+
   selectSuggestion(e) {
     const index = e.currentTarget.dataset.index;
     const selectedDrug = this.data.matchedDrugs[index];
@@ -56,46 +84,82 @@ Page({
       description: selectedDrug.desc
     });
   },
-  // 更新药品详情
+  // 更新药品详情（从API获取）
   updateDrugDetail(drugName) {
-    const detail = drugApi.getDrugDetail(drugName)
-    this.setData({
-      currentType: detail.name,
-      reimburseRate: detail.rate,
-      selfPay: detail.self,
-      description: detail.desc
-    })
+    const that = this;
+    wx.request({
+      // url: 'https://api.example.com/drug/detail?name=${encodeURIComponent(drugName)}',
+      url: `http://localhost:4000/drug/detail?name=${encodeURIComponent(drugName)}`,
+      method: 'GET',
+      success(res) {
+        // 假设API返回格式为 { name: '药品名', rate: 80, self: 20, desc: '报销说明' }
+        const detail = res.data;
+        that.setData({
+          currentType: detail.name,
+          reimburseRate: detail.rate,
+          selfPay: detail.self || (100 - detail.rate),
+          description: detail.desc
+        });
+      },
+      fail() {
+        wx.showToast({ title: '药品详情获取失败', icon: 'none' });
+      }
+    });
   },
   // 选择药品（模拟picker选择）
   selectDrug(e) {
     const index = e.detail.value
     this.updateDrugDetail(this.data.drugList[index].name)
   },
-  // 添加到收藏
+  // 添加到收藏（通过接口）
   addToFavorites() {
-    // 获取收藏数据
-    let favorites = wx.getStorageSync('favorites') || []
-    // 检查是否已经收藏
-    const isFavorite = favorites.some(item => item.name === this.data.currentType)
-    if (isFavorite) {
-      wx.showToast({
-        title: '已存在于收藏',
-        icon: 'none'
-      })
-      return
-    }
-    // 添加到收藏
-    favorites.push({
-      name: this.data.currentType,
-      rate: this.data.reimburseRate,
-      self: this.data.selfPay,
-      desc: this.data.description
-    })
-    // 保存收藏数据
-    wx.setStorageSync('favorites', favorites)
-    wx.showToast({
-      title: '已加入收藏',
-      icon: 'success'
-    })
+    const that = this;
+    // 先获取当前收藏列表
+    wx.request({
+      url: 'http://localhost:3000/getFavorites',
+      method: 'GET',
+      data: { openid: 'test_openid' },
+      success(res) {
+        let favorites = res.data.favorites || [];
+        // 检查是否已经收藏
+        const isFavorite = favorites.some(item => item.name === that.data.currentType);
+        if (isFavorite) {
+          wx.showToast({
+            title: '已存在于收藏',
+            icon: 'none'
+          });
+          return;
+        }
+        // 添加到收藏
+        favorites.push({
+          name: that.data.currentType,
+          rate: that.data.reimburseRate,
+          self: that.data.selfPay,
+          desc: that.data.description
+        });
+        // 保存到后端
+        wx.request({
+          url: 'http://localhost:3000/setFavorites',
+          method: 'POST',
+          header: { 'content-type': 'application/json' },
+          data: {
+            openid: 'test_openid',
+            favorites: favorites
+          },
+          success: () => {
+            wx.showToast({
+              title: '已加入收藏',
+              icon: 'success'
+            });
+          },
+          fail: () => {
+            wx.showToast({ title: '收藏失败', icon: 'none' });
+          }
+        });
+      },
+      fail() {
+        wx.showToast({ title: '获取收藏失败', icon: 'none' });
+      }
+    });
   }
 })

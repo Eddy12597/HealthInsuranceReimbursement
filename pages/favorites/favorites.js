@@ -39,7 +39,7 @@ Page({
       title: '提示',
       content: '确定要取消收藏吗？',
       success: (res) => {
-        if (res.confirm) {
+        if (res.confirm) {  
           favorites.splice(index, 1)
           // 更新到后端
           wx.request({

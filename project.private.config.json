@@ -3,7 +3,7 @@
   "projectname": "%E5%8C%BB%E4%BF%9D%E6%8A%A5%E9%94%80%E6%9F%A5%E8%AF%A2",
   "setting": {
     "compileHotReLoad": true,
-    "urlCheck": true,
+    "urlCheck": false,
     "coverView": true,
     "lazyloadPlaceholderEnable": false,
     "skylineRenderEnable": false,
@@ -19,5 +19,6 @@
     "checkInvalidKey": true,
     "ignoreDevUnusedFiles": true
   },
-  "libVersion": "3.8.9"
+  "libVersion": "3.8.9",
+  "condition": {}
 }
