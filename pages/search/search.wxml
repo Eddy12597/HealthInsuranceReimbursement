@@ -1,0 +1,38 @@
+<view class="container">
+    <!-- Drug search input with auto-suggest -->
+    <view class="search-section">
+      <input 
+        type="text" 
+        placeholder="输入药品名称" 
+        value="{{searchText}}"
+        bindinput="handleInput"
+        class="search-input"
+      />
+      <!-- Display matching suggestions -->
+      <view class="suggestions" wx:if="{{showSuggestions && matchedDrugs.length > 0}}">
+        <view 
+          wx:for="{{matchedDrugs}}" 
+          wx:key="id" 
+          class="suggestion-item"
+          bindtap="selectSuggestion"
+          data-index="{{index}}"
+        >
+          {{item.name}}
+        </view>
+      </view>
+    </view>
+  
+    <!-- 查询结果显示区域 -->
+    <view class="result-box" style="width: 354rpx; display: block; box-sizing: border-box" wx:if="{{currentType}}">
+      <text class="result-title">当前药品：</text>
+      <text class="result-value">{{currentType}}</text>
+      <text class="result-title">报销比例：</text>
+      <text class="result-value">{{reimburseRate}}%</text>
+      <text class="result-title">自费部分：</text>
+      <text class="result-value">{{selfPay}}%</text>
+      <text class="result-desc">{{description}}</text>
+    </view>
+    
+    <!-- 收藏按钮 -->
+    <button bindtap="addToFavorites" class="fav-btn" wx:if="{{currentType}}">收藏结果</button>
+  </view>

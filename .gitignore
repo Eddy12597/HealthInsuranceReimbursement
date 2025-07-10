@@ -1,0 +1,27 @@
+# Windows
+[Dd]esktop.ini
+Thumbs.db
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+
+# Node.js
+node_modules/
+
+*.local
+*.override
+*.swp
+*.swo
+coverage/
+.nyc_output
+
+*.vscode
+.vscode/
+.idea
+.env
+.env.*
