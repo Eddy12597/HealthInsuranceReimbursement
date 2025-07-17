@@ -27,8 +27,15 @@ An elderly friendly WeChat MiniProgram to request the reimbursement rate of medi
 ### How to use:
 #### Frontend:
 1. Open up WeChat Dev Tools
-2. Click 'compile' on the top menu
-3. Click 'preview' on the top menu
+2. create a `config.js` file in the project root folder
+3. add the following lines to `config.js`, replacing `YOUR_API_KEY` with your deepseek api key:
+```javascript
+module.exports = {
+  DEEPSEEK_API_KEY: 'YOUR_API_KEY'
+};
+```
+4. Click 'compile' on the top menu
+5. Click 'preview' on the top menu
 #### Backend (localhost server):
 ```bash
 cd server/src
