@@ -1,0 +1,59 @@
+<!--pages/aichat.wxml-->
+<view class="container">
+  <!-- Header -->
+  <view class="header">
+    <text class="title">AI 问答</text>
+  </view>
+
+  <!-- Chat messages -->
+  <scroll-view class="message-container" scroll-y scroll-with-animation scroll-top="{{scrollTop}}">
+    <block wx:for="{{messages}}" wx:key="id">
+      <view class="message-item {{item.role}}">
+        <block wx:if="{{item.role === 'assistant'}}">
+          <view class="avatar">
+            <image src="/images/ai-avatar.png" alt="AI"/>
+          </view>
+          <view class="message-content">
+            <text class="message-text">{{item.content}}</text>
+            <view wx:if="{{item.typing}}" class="typing-indicator">
+              <view class="dot"></view>
+              <view class="dot"></view>
+              <view class="dot"></view>
+            </view>
+          </view>
+        </block>
+        <block wx:if="{{item.role === 'user'}}">
+          <view class="message-content user-content">
+            <text class="message-text">{{item.content}}</text>
+          </view>
+        </block>
+      </view>
+    </block>
+    <!-- Loading indicator for AI response -->
+    <view wx:if="{{loading}}" class="ai-loading">
+      <view class="loading-center">
+        <text>AI 正在思考...</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- Input area -->
+  <view class="input-container" style="position:fixed;bottom:0;left:0;width:100%;background:#fafafa;z-index:10;display:flex;align-items:flex-end;padding:10rpx 0;">
+    <textarea 
+      class="input-box" 
+      placeholder="请输入问题..." 
+      confirm-type="send" 
+      bindconfirm="sendMessage" 
+      bindinput="onInput" 
+      value="{{inputValue}}"
+      focus="{{autoFocus}}"
+      disabled="{{loading}}"
+      auto-height="true"
+      maxlength="500"
+      style="flex:1;margin-right:10rpx;min-height:80rpx;max-height:300rpx;resize:none;"
+    />
+    <button class="send-button" bindtap="sendMessage" disabled="{{!inputValue.length || loading}}" style="height:80rpx;width:80rpx;display:flex;align-items:center;justify-content:center;">
+      <image src="/images/send-icon.png" style="width:40rpx;height:40rpx;" />
+    </button>
+  </view>
+</view>

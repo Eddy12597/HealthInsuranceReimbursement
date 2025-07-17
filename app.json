@@ -2,7 +2,8 @@
   "pages": [
     "pages/index/index",
     "pages/search/search",
-    "pages/favorites/favorites"
+    "pages/favorites/favorites",
+    "pages/aichat/aichat"
   ],
   "window": {
     "navigationBarBackgroundColor": "#2196F3",
