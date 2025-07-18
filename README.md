@@ -61,6 +61,6 @@ node server_favorites.js
 2. Research more about reimbursement rates & relation with insurance plans
 3. Find backend host for favorites storage
 4. Register App on Tencent Cloud or something
-5. Add AI Chatbot feature (may require RAG / fine tuning??) -> @Clark
+5. ~~Add AI Chatbot feature (may require RAG / fine tuning??) -> @Clark (Done)~~
 5. ~~Maybe add the server-side code as well, but that would mess up the npm build in wc dev tools (Done)~~
 6. ~~Update README.md to include screenshots and stuff (Done)~~
