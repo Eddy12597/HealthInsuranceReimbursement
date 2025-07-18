@@ -7,10 +7,7 @@
   <view class="user-section">
     <block wx:if="{{!isLoggedIn}}">
       <!-- 未登录状态 -->
-      <view class="login-prompt">
-        <text class="login-text">请先登录微信账号</text>
-        <button bindtap="handleLogin" class="login-btn">微信登录</button>
-      </view>
+      <button bindtap="handleLogin" class="login-btn">微信登录</button>
     </block>
     <block wx:else>
       <!-- 已登录状态 -->
