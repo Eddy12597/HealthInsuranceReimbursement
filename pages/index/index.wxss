@@ -11,6 +11,75 @@
   text-align: center;
   margin-bottom: 60rpx;
 }
+
+/* 用户登录区域样式 */
+.user-section {
+  margin-bottom: 40rpx;
+  padding: 30rpx;
+  background: #f8f9fa;
+  border-radius: 10rpx;
+}
+
+.login-prompt {
+  text-align: center;
+}
+
+.login-text {
+  display: block;
+  font-size: 32rpx;
+  color: #666;
+  margin-bottom: 20rpx;
+}
+
+.login-btn {
+  background: #07c160;
+  color: white;
+  border: none;
+  border-radius: 8rpx;
+  padding: 20rpx 40rpx;
+  font-size: 32rpx;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+}
+
+.user-details {
+  flex: 1;
+}
+
+.nickname {
+  display: block;
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.status {
+  display: block;
+  font-size: 28rpx;
+  color: #07c160;
+  margin-top: 8rpx;
+}
+
+.logout-btn {
+  background: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 8rpx;
+  padding: 15rpx 30rpx;
+  font-size: 28rpx;
+}
+
 /* 导航按钮样式 */
 .nav-btn {
   display: block;

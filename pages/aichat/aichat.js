@@ -10,12 +10,37 @@ Page({
   },
 
   onLoad() {
+    // Check login status
+    this.checkLoginStatus();
+    
     // Initialize with a welcome message
     this.addMessage({
       role: 'assistant',
       content: '您好！请问能如何帮到您？',
       id: Date.now()
     });
+  },
+
+  onShow() {
+    // Check login status when page shows
+    this.checkLoginStatus();
+  },
+
+  // Check login status
+  checkLoginStatus() {
+    const app = getApp();
+    
+    if (!app.globalData.isLoggedIn) {
+      wx.showModal({
+        title: '请先登录',
+        content: '使用AI问答功能需要先登录微信账号',
+        showCancel: false,
+        success: () => {
+          wx.navigateBack();
+        }
+      });
+      return;
+    }
   },
 
   onInput(e) {

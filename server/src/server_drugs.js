@@ -15,6 +15,63 @@ const drugs = [
   { name: '氯雷他定', rate: 60, desc: '医保报销60%' }
 ];
 
+// Mock user data storage
+const users = new Map();
+
+// POST /login - WeChat login endpoint
+app.post('/login', (req, res) => {
+  const { code, userInfo } = req.body;
+  
+  // In a real implementation, you would:
+  // 1. Send the code to WeChat API to get openid and session_key
+  // 2. Store user info in database
+  // 3. Return session token or openid
+  
+  // For now, we'll create a mock openid
+  const mockOpenid = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  
+  // Store user info
+  users.set(mockOpenid, {
+    openid: mockOpenid,
+    userInfo: userInfo,
+    createdAt: new Date()
+  });
+  
+  console.log('Login request received:', { code, userInfo });
+  
+  res.json({
+    success: true,
+    openid: mockOpenid,
+    userInfo: userInfo || {
+      nickName: '微信用户',
+      avatarUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IiNFNUU3RUIiLz4KPGNpcmNsZSBjeD0iNDAiIGN5PSIzMCIgcj0iMTIiIGZpbGw9IiM5Q0EzQUYiLz4KPHBhdGggZD0iTTE2IDYwQzE2IDUwLjA1OSAyNC4wNTkgNDIgMzQgNDJINjZDNTUuOTQxIDQyIDQ4IDUwLjA1OSA0OCA2MFY2NkM0OCA2Ni41NTIgNDcuNTUyIDY3IDQ3IDY3SDMzQzMyLjQ0OCA2NyAzMiA2Ni41NTIgMzIgNjZWNjBaIiBmaWxsPSIjOUNBM0FGIi8+Cjwvc3ZnPgo=',
+      gender: 0,
+      country: '',
+      province: '',
+      city: '',
+      language: 'zh_CN'
+    }
+  });
+});
+
+// GET /user/:openid - Get user info
+app.get('/user/:openid', (req, res) => {
+  const { openid } = req.params;
+  const user = users.get(openid);
+  
+  if (user) {
+    res.json({
+      success: true,
+      user: user
+    });
+  } else {
+    res.status(404).json({
+      success: false,
+      error: 'User not found'
+    });
+  }
+});
+
 // GET /drugs - 获取药品列表
 app.get('/drugs', (req, res) => {
   res.json({ data: drugs });

@@ -114,11 +114,22 @@ Page({
   // 添加到收藏（通过接口）
   addToFavorites() {
     const that = this;
+    const app = getApp();
+    
+    // 检查登录状态
+    if (!app.globalData.isLoggedIn) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none'
+      });
+      return;
+    }
+    
     // 先获取当前收藏列表
     wx.request({
       url: 'http://localhost:3000/getFavorites',
       method: 'GET',
-      data: { openid: 'test_openid' },
+      data: { openid: app.globalData.openid },
       success(res) {
         let favorites = res.data.favorites || [];
         // 检查是否已经收藏
@@ -143,7 +154,7 @@ Page({
           method: 'POST',
           header: { 'content-type': 'application/json' },
           data: {
-            openid: 'test_openid',
+            openid: app.globalData.openid,
             favorites: favorites
           },
           success: () => {

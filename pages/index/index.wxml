@@ -2,16 +2,32 @@
 <view class="container">
   <!-- 标题 -->
   <view class="title">医保报销查询</view>
-  <!-- 语音输入区域（根据用户要求已移除） -->
-  <!-- 
-  <view class="voice-input">
-    <button bindtap="startRecord" class="voice-btn">按住说话</button>
-    <text class="tip">点击说话查询药品报销</text>
+  
+  <!-- 用户登录状态区域 -->
+  <view class="user-section">
+    <block wx:if="{{!isLoggedIn}}">
+      <!-- 未登录状态 -->
+      <view class="login-prompt">
+        <text class="login-text">请先登录微信账号</text>
+        <button bindtap="handleLogin" class="login-btn">微信登录</button>
+      </view>
+    </block>
+    <block wx:else>
+      <!-- 已登录状态 -->
+      <view class="user-info">
+        <image class="avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill" binderror="onAvatarError"></image>
+        <view class="user-details">
+          <text class="nickname">{{userInfo.nickName}}</text>
+          <text class="status">已登录</text>
+        </view>
+        <button bindtap="handleLogout" class="logout-btn">退出</button>
+      </view>
+    </block>
   </view>
-  -->
+
   <!-- 药品报销查询导航按钮 -->
-  <navigator url="/pages/search/search" class="nav-btn">药品报销查询</navigator>
+  <view class="nav-btn" bindtap="navigateToPage" data-url="/pages/search/search">药品报销查询</view>
   <!-- 收藏功能导航按钮 -->
-  <navigator url="/pages/favorites/favorites" class="nav-btn">我的收藏</navigator>
-  <navigator url="/pages/aichat/aichat" class="nav-btn">AI问答</navigator>
+  <view class="nav-btn" bindtap="navigateToPage" data-url="/pages/favorites/favorites">我的收藏</view>
+  <view class="nav-btn" bindtap="navigateToPage" data-url="/pages/aichat/aichat">AI问答</view>
 </view>
