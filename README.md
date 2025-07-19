@@ -5,8 +5,8 @@ An elderly friendly WeChat MiniProgram to request the reimbursement rate of medi
 <table>
   <tr>
     <td align="center">
-      <img width="382" height="774" alt="Drug Reimbursement lookup page" src="https://github.com/user-attachments/assets/f60ddbe8-1a69-4531-84a4-3b0172683fc6"/>
-      <p><em>Drug Reimbursement lookup page (localhost drug api for now)</em></p>
+      <img width="387" height="795" alt="image" src="https://github.com/user-attachments/assets/a2c11510-0b4f-44e3-8e33-c23fdec13932" />
+      <p><em>Index page with login button, lookup page, favorites page, and ai chat page</em></p>
     </td>
     <td align="center">
       <img width="380" height="768" alt="Automatic search completion" src="https://github.com/user-attachments/assets/97d29438-da3d-4310-a98b-bc6cb14ea3ef"/>
@@ -60,7 +60,8 @@ node server_favorites.js
 1. Find API endpoint (should have drug name, drug reimbursement rate, and a short description for extra info).
 2. Research more about reimbursement rates & relation with insurance plans
 3. Find backend host for favorites storage
-4. Register App on Tencent Cloud or something
-5. ~~Add AI Chatbot feature (may require RAG / fine tuning??) -> @Clark (Done)~~
+4. See if WeiXin has built-in login api / complete server side code for login
+5. Register App on Tencent Cloud or something
+6. ~~Add AI Chatbot feature (may require RAG / fine tuning??) -> @Clark (Done)~~
 5. ~~Maybe add the server-side code as well, but that would mess up the npm build in wc dev tools (Done)~~
 6. ~~Update README.md to include screenshots and stuff (Done)~~
