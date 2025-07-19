@@ -1,3 +1,10 @@
+/* VARIABLES */
+page {
+    --main-green: #4CAF50;
+    --menu-border-radius: 10rpx; 
+}
+
+
 /* 首页样式 */
 .container {
   padding: 40rpx;
@@ -13,14 +20,12 @@
 }
 
 /* 用户登录区域样式 */
-/* Make user-section look like nav-btn */
-/* Make user-section align with nav-btns, but allow content inside to stack */
 .user-section {
   width: 80%;
   margin: 30rpx auto 40rpx auto;
   border-radius: 10rpx;
   box-sizing: border-box;
-  background: #4CAF50;
+  background: var(--main-green);
   padding: 0rpx;
   text-align: center;
 }
@@ -30,7 +35,7 @@
 
 /* Make login button same width as nav-btn */
 .login-btn {
-  background: #4CAF50;
+  background: var(--main-green);
   color: white;
   border: none;
   border-radius: 0rpx;
@@ -45,44 +50,83 @@
 }
 
 .user-info {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20rpx;
+    box-sizing: border-box;
+    width: 100%;
 }
+  
 
 .avatar {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 50%;
-  margin-right: 20rpx;
+    width: 75rpx;
+    height: 75rpx;
+    border-radius: 50%;
+    margin-right: 20rpx;
+    flex-shrink: 0;
 }
-
-.user-details {
-  flex: 1;
-}
-
-.nickname {
+  
+/* .nickname {
   display: block;
   font-size: 36rpx;
   font-weight: bold;
   color: #333;
+} */
+
+.user-details {
+    flex: 1;
+    min-width: 0;
+    font-size: 30rpx;
+    color: white;
+    word-break: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.status {
-  display: block;
-  font-size: 28rpx;
-  color: #07c160;
+
+
+/* Style for logged-in status to match nav-btn */
+.status-btn {
+  width: 80%;
+  height: 100rpx;
+  line-height: 100rpx;
+  background: var(--main-green);
+  color: white;
+  border-radius: var(--main-border-radius);
+  text-align: center;
+  font-size: 30rpx;
   margin-top: 8rpx;
 }
 
+/* Make logout button narrower and text normal */
 .logout-btn {
-  background: #ff4757;
-  color: white;
-  border: none;
-  border-radius: 8rpx;
-  padding: 15rpx 30rpx;
-  font-size: 28rpx;
+    /* Box Model & Layout */
+    display: inline-block;
+    width: auto;
+    min-width: 130rpx;
+    height: 70rpx;
+    min-height: 60rpx;
+    margin-left: 20rpx;
+    box-sizing: border-box;
+
+    /* Background & Borders */
+    background: white;
+    border: none;
+    border-radius: 8rpx;
+
+    /* Text & Font */
+    color: var(--main-green);
+    font-size: 36rpx;
+    line-height: 60rpx;
+
+    /* Spacing & Padding */
+    padding: 0 20rpx;
 }
+  
+
+
 
 /* 导航按钮样式 */
 .nav-btn {
@@ -93,7 +137,7 @@
   background: #4CAF50;
   color: white;
   margin: 30rpx 0;
-  border-radius: 10rpx;
+  border-radius: var(--menu-border-radius);
   text-align: center;
   font-size: 40rpx;
 }

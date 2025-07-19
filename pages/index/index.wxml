@@ -14,11 +14,11 @@
       <view class="user-info">
         <image class="avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill" binderror="onAvatarError"></image>
         <view class="user-details">
-          <text class="nickname">{{userInfo.nickName}}</text>
-          <text class="status">已登录</text>
+          <text class="nav-btn">{{userInfo.nickName}}</text>
         </view>
-        <button bindtap="handleLogout" class="logout-btn">退出</button>
+        <view class="logout-btn" bindtap="handleLogout">退出</view>
       </view>
+
     </block>
   </view>
 
