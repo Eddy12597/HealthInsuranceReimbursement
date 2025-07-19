@@ -9,15 +9,19 @@ An elderly friendly WeChat MiniProgram to request the reimbursement rate of medi
       <p><em>Index page with login button, lookup page, favorites page, and ai chat page</em></p>
     </td>
     <td align="center">
+      <img width="406" height="849" alt="image" src="https://github.com/user-attachments/assets/c042ca6a-18be-4f2e-93e6-e3d9461179e2" />
+      <p><em>Home page when logged in</em></p>
+    </td>
+    <td align="center">
       <img width="380" height="768" alt="Automatic search completion" src="https://github.com/user-attachments/assets/97d29438-da3d-4310-a98b-bc6cb14ea3ef"/>
       <p><em>Automatic search completion with name initials</em></p>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <img width="383" height="771" alt="Save to favorites" src="https://github.com/user-attachments/assets/ca66a9cc-0cab-4626-bda9-9b19c2ca3a28"/>
       <p><em>Save to favorites (mock localhost server for now)</em></p>
     </td>
-  </tr>
-  <tr>
     <td align="center">
       <img width="384" height="723" alt="Show favorites" src="https://github.com/user-attachments/assets/b51d79a2-0035-4d77-8dfa-8fdf738946a4"/>
       <p><em>Show favorites (mock localhost server for now)</em></p>
@@ -26,8 +30,10 @@ An elderly friendly WeChat MiniProgram to request the reimbursement rate of medi
       <img width="381" height="794" alt="image" src="https://github.com/user-attachments/assets/bbcdb932-3585-4014-8a2b-b56217e8b5a5" />
       <p><em>AI ChatBot for advanced help</em></p>
     </td>
+  </tr>
+  <tr>
     <td align="center>
-      <img width="382" height="748" alt="image" src="https://github.com/user-attachments/assets/0b6a2623-d17d-4f55-a915-362b6a7ef0ba" />
+      <img width="399" height="850" alt="image" src="https://github.com/user-attachments/assets/609afd25-a589-4055-b66b-06ceeb12c138" />
       <p><em>AI ChatBot for advanced help</em></p>
     </td>
   </tr>
