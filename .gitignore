@@ -27,3 +27,5 @@ coverage/
 .env.*
 
 config.js
+
+project.config.json
