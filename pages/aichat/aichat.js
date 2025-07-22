@@ -100,7 +100,16 @@ Page({
       },
       data: {
         model: 'deepseek-chat',
-        messages: conversationHistory,
+        messages: [
+          { role: 'system', content: engineered_prompt },
+          ...this.data.messages
+            .filter(msg => !msg.typing)
+            .map(msg => ({
+              role: msg.role,
+              content: msg.content
+            })),
+          { role: 'user', content: userMessage }
+        ],
         temperature: 0.7, // Slightly lower temperature for more focused answers
         max_tokens: 150, // Limit response length
       },
@@ -149,88 +158,27 @@ Page({
 
     success: (res) => {
         console.log("Raw API Response: ", res);
-        let cleanedData = res.data;
-    
-        // Clean the response string by removing unwanted parts
-        if (typeof cleanedData === 'string') {
-            cleanedData = cleanedData.replace(/data:\s*/g, '');
-            cleanedData = cleanedData.replace(/\n+/g, '');
-            cleanedData = cleanedData.replace(/\[DONE\]/g, '');
-    
-            const chunks = cleanedData.split('}{').map((chunk, index, array) => {
-                if (index > 0) {
-                    chunk = `{${chunk}`;
-                }
-                if (index < array.length - 1) {
-                    chunk = `${chunk}}`;
-                }
-                return chunk;
-            });
-    
-            let parsedChunks = [];
-            for (let chunk of chunks) {
-                try {
-                    parsedChunks.push(JSON.parse(chunk));
-                } catch (e) {
-                    console.error('Error parsing chunk:', e);
-                    console.log('Chunk:', chunk);
-                    return;
-                }
-            }
-    
-            console.log('Parsed Chunks:', parsedChunks);
-    
-            let aiContent = '';
-            let typingMsgId = Date.now(); // Unique message ID for the "typing" message
-    
-            // Add initial "typing" message to show that the AI is responding
-            self.setData({
-                messages: [...self.data.messages, { id: typingMsgId, role: 'assistant', content: '', typing: true }]
-            });
-    
-            const processChunks = function() {
-                for (let i = 0; i < parsedChunks.length; i++) {
-                    const chunk = parsedChunks[i];
-                    if (chunk && chunk.choices && chunk.choices[0] && chunk.choices[0].delta) {
-                        const content = chunk.choices[0].delta.content;
-                        if (content) {
-                            aiContent += content;
-    
-                            const messages = self.data.messages.map(msg =>
-                                msg.id === typingMsgId ? { ...msg, content: aiContent } : msg
-                            );
-                            self.setData({ messages });
-                        }
-    
-                        if (chunk.choices[0].finish_reason === "stop") {
-                            console.log("Stream finished");
-    
-                            // Finalize the message and remove the "typing" indicator
-                            const messages = self.data.messages.filter(msg => msg.id !== typingMsgId);
-                            const aiResponse = {
-                                role: 'assistant',
-                                content: aiContent,
-                                id: Date.now(),  // Assign a new ID to the final message
-                                typing: false // Disable typing indicator
-                            };
-    
-                            self.setData({
-                                messages: [...messages, aiResponse],
-                                loading: false
-                            });
-    
-                            if (typeof self.saveCurrentConversation === 'function') {
-                                self.saveCurrentConversation();
-                            }
-                        }
-                    }
-                }
-            };
-    
-            processChunks(); // Start processing the chunks
-        } else {
-            console.error('Data is not a string:', cleanedData);
+        
+        // Remove typing indicator
+        const messages = this.data.messages.filter(msg => msg.id !== typingMsgId);
+        this.setData({ messages });
+
+        let aiContent = '服务器繁忙，请稍后再试';
+        
+        if (res.data && res.data.choices && res.data.choices[0] && res.data.choices[0].message) {
+            aiContent = res.data.choices[0].message.content;
         }
+
+        const aiResponse = {
+            role: 'assistant',
+            content: aiContent,
+            id: Date.now()
+        };
+        
+        this.setData({
+            messages: [...messages, aiResponse],
+            loading: false
+        });
     },
     
     
