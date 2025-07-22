@@ -49,7 +49,7 @@
       focus="{{autoFocus}}"
       disabled="{{loading}}"
       auto-height="true"
-      maxlength="500"
+      maxlength="1000"
       style="flex:1;margin-right:10rpx;min-height:80rpx;max-height:300rpx;resize:none;"
     />
     <button class="send-button" bindtap="sendMessage" disabled="{{!inputValue.length || loading}}" style="height:80rpx;width:80rpx;display:flex;align-items:center;justify-content:center;">

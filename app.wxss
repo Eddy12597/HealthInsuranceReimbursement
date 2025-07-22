@@ -7,4 +7,15 @@
   justify-content: space-between;
   padding: 200rpx 0;
   box-sizing: border-box;
+
+  --main-green: #4CAF50;
+  --menu-border-radius: 10rpx; 
+  --light-green: #07c160;
 } 
+
+
+/* DEBUGGING */
+view, text, image, button {
+    border: 1px solid red;
+}
+

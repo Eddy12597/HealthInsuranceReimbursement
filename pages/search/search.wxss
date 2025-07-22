@@ -48,8 +48,6 @@
 }
 /* 收藏按钮样式 */
 .fav-btn {
-  display: block;
-  width: 80%;
   height: 100rpx;
   line-height: 100rpx;
   background: #FF9800;
@@ -58,6 +56,10 @@
   border-radius: 10rpx;
   text-align: center;
   font-size: 40rpx;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .search-section {

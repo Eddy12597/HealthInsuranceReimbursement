@@ -1,5 +1,7 @@
 const api = require('../../config.js').DEEPSEEK_API_KEY;
 
+const engineered_prompt = '你是一个乐于助人的AI助手。请用简洁、直接的方式回答用户的问题，保持回答专业但简明扼要。回答尽量控制在3句话以内，除非用户明确要求详细解释。'
+
 Page({
   data: {
     messages: [],
@@ -9,7 +11,7 @@ Page({
     loading: false
   },
 
-  onLoad() {
+  onLoad() { 
     // Check login status
     this.checkLoginStatus();
     
@@ -88,6 +90,23 @@ Page({
     };
     this.addMessage(typingMessage);
 
+    // Prepare conversation history with system prompt for concise answers
+    const conversationHistory = [
+      // System message setting the behavior expectation
+      {
+        role: 'system',
+        content: engineered_prompt,
+      },
+      // Filter out typing indicators and map to API format
+      ...this.data.messages
+        .filter(msg => !msg.typing)
+        .map(msg => ({
+          role: msg.role,
+          content: msg.content
+        })),
+      { role: 'user', content: userMessage }
+    ];
+
     // Call DeepSeek API
     wx.request({
       url: 'https://api.deepseek.com/chat/completions',
@@ -97,16 +116,10 @@ Page({
         'Authorization': `Bearer ${api}`,
       },
       data: {
-        model: 'deepseek-chat', // or your specific model name
-        messages: [
-          ...this.data.messages
-            .filter(msg => !msg.typing)
-            .map(msg => ({
-              role: msg.role,
-              content: msg.content
-            })),
-          { role: 'user', content: userMessage }
-        ]
+        model: 'deepseek-chat',
+        messages: conversationHistory,
+        temperature: 0.7, // Slightly lower temperature for more focused answers
+        max_tokens: 150, // Limit response length
       },
       success: (res) => {
         // Remove typing indicator
