@@ -8,7 +8,8 @@ Page({
     inputValue: '',
     scrollTop: 0,
     autoFocus: true,
-    loading: false
+    loading: false,
+    currentRequest: null // Track current request for cancellation
   },
 
   onLoad() { 
@@ -26,6 +27,13 @@ Page({
   onShow() {
     // Check login status when page shows
     this.checkLoginStatus();
+  },
+
+  onUnload() {
+    // Cancel any ongoing request when page is unloaded
+    if (this.data.currentRequest) {
+      this.data.currentRequest.abort();
+    }
   },
 
   // Check login status
@@ -55,6 +63,11 @@ Page({
     const message = this.data.inputValue.trim();
     if (!message || this.data.loading) return;
 
+    // Cancel any existing request
+    if (this.data.currentRequest) {
+      this.data.currentRequest.abort();
+    }
+
     // Add user message
     const userMessage = {
       role: 'user',
@@ -63,7 +76,7 @@ Page({
     };
     this.addMessage(userMessage);
 
-    // Clear input
+    // Clear input immediately for better UX
     this.setData({
       inputValue: '',
       loading: true
@@ -75,12 +88,23 @@ Page({
 
   addMessage(message) {
     this.setData({
-      messages: [...this.data.messages, message],
-      scrollTop: this.data.scrollTop + 10000 // Force scroll to bottom
+      messages: [...this.data.messages, message]
+    }, () => {
+      // Use nextTick to ensure DOM is updated before scrolling
+      this.scrollToBottom();
+    });
+  },
+
+  scrollToBottom() {
+    // Use a large value to ensure scroll to bottom
+    this.setData({
+      scrollTop: 999999
     });
   },
 
   generateAIResponse(userMessage) {
+    console.log('Starting AI response generation for:', userMessage);
+    
     const typingMessage = {
       role: 'assistant',
       content: '',
@@ -88,10 +112,34 @@ Page({
       id: Date.now() + 1
     };
     this.addMessage(typingMessage);
-    let aiContent = '';
     let typingMsgId = typingMessage.id;
-    const self = this; // Fix context for nested function
-    wx.request({
+    
+    // Optimize message history - only send last 5 messages to reduce payload
+    const recentMessages = this.data.messages
+      .filter(msg => !msg.typing)
+      .slice(-5) // Only last 5 messages
+      .map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+    
+    console.log('Making API request with data:', {
+      model: 'deepseek-chat',
+      messages: [
+        { role: 'system', content: engineered_prompt },
+        ...recentMessages,
+        { role: 'user', content: userMessage }
+      ],
+      temperature: 0.7,
+      max_tokens: 150
+    });
+    
+    console.log('API Key (first 10 chars):', api ? api.substring(0, 10) + '...' : 'undefined');
+    
+    console.log('About to make wx.request...');
+    
+    // Use the traditional callback approach for wx.request
+    const requestTask = wx.request({
       url: 'https://api.deepseek.com/chat/completions',
       method: 'POST',
       header: {
@@ -102,64 +150,18 @@ Page({
         model: 'deepseek-chat',
         messages: [
           { role: 'system', content: engineered_prompt },
-          ...this.data.messages
-            .filter(msg => !msg.typing)
-            .map(msg => ({
-              role: msg.role,
-              content: msg.content
-            })),
+          ...recentMessages,
           { role: 'user', content: userMessage }
         ],
-        temperature: 0.7, // Slightly lower temperature for more focused answers
-        max_tokens: 150, // Limit response length
+        temperature: 0.7,
+        max_tokens: 150,
+        stream: false
       },
-    //   success: (res) => {
-    //       console.log("API Response: ", res)
-    //     // let fullContent = '';
-    //     let fullContent = [];
-
-    //     if (res.data && res.data.choices && res.data.choices[0] && res.data.choices[0].message) {
-    //       fullContent = res.data.choices[0].message.content;
-    //     }
-    //     let i = 0;
-    //     const updateStream = function() {
-    //         if (i < fullContent.length) {
-    //           // Get the next chunk and append it to aiContent
-    //           aiContent += fullContent[i].choices[0].content;
-    //           console.log('Updating AI content:', aiContent);  // Log here to check the update
-          
-    //           // Update the message in the UI
-    //           const messages = self.data.messages.map(msg =>
-    //             msg.id === typingMsgId ? { ...msg, content: aiContent } : msg
-    //           );
-    //           self.setData({ messages });
-    //           i++;
-          
-    //           setTimeout(updateStream, 30);
-    //         } else {
-    //           // When finished, update the UI with the full content
-    //           const messages = self.data.messages.filter(msg => msg.id !== typingMsgId);
-    //           console.log("Full Content Type: ", typeof fullContent)
-    //           const aiResponse = {
-    //             role: 'assistant',
-    //             content: fullContent.map(chunk => chunk.choices[0].content).join(''), // Join the chunks together
-    //             id: Date.now()
-    //           };
-    //           self.setData({ messages: [...messages, aiResponse], loading: false });
-    //           if (typeof self.saveCurrentConversation === 'function') {
-    //             self.saveCurrentConversation();
-    //           }
-    //         }
-    //       };
-          
-    //     updateStream();
-    //   },
-    // Assuming that 'self.setData()' and other parts of the code are already handling streaming as per your implementation.
-
-    success: (res) => {
-        console.log("Raw API Response: ", res);
+      timeout: 15000,
+      success: (res) => {
+        console.log("API Request SUCCESS: ", res);
         
-        // Remove typing indicator
+        // Remove typing indicator immediately
         const messages = this.data.messages.filter(msg => msg.id !== typingMsgId);
         this.setData({ messages });
 
@@ -175,36 +177,39 @@ Page({
             id: Date.now()
         };
         
+        // Update UI immediately with response
         this.setData({
             messages: [...messages, aiResponse],
-            loading: false
+            loading: false,
+            currentRequest: null
+        }, () => {
+            // Scroll to bottom after response is added
+            this.scrollToBottom();
         });
-    },
-    
-    
-      
-      
-      
-      
-      
-      
-      
-    
-      
-      
+      },
       fail: (err) => {
-        const messages = self.data.messages.filter(msg => msg.id !== typingMsgId);
+        console.log("API Request FAILED: ", err);
+        const messages = this.data.messages.filter(msg => msg.id !== typingMsgId);
         const aiResponse = {
           role: 'assistant',
           content: '服务器繁忙，请稍后再试',
           id: Date.now()
         };
-        self.setData({ messages: [...messages, aiResponse], loading: false });
-        if (typeof self.saveCurrentConversation === 'function') {
-          self.saveCurrentConversation();
-        }
+        this.setData({ 
+            messages: [...messages, aiResponse], 
+            loading: false,
+            currentRequest: null
+        }, () => {
+            // Scroll to bottom after error response is added
+            this.scrollToBottom();
+        });
         console.error(err);
       }
     });
+    
+    console.log('wx.request called, requestTask:', requestTask);
+    
+    // Store request for potential cancellation
+    this.setData({ currentRequest: requestTask });
   }
 });

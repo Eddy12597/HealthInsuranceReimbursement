@@ -15,8 +15,8 @@
           </view>
           <view class="message-content">
             <text class="message-text">{{item.content}}</text>
-            <!-- Only show the typing indicator if content is empty and typing is true -->
-            <view wx:if="{{item.typing && !item.content}}" class="typing-indicator">
+            <!-- Show typing indicator for AI messages -->
+            <view wx:if="{{item.typing}}" class="typing-indicator">
               <view class="dot"></view>
               <view class="dot"></view>
               <view class="dot"></view>
