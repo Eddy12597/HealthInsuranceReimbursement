@@ -15,7 +15,8 @@
           </view>
           <view class="message-content">
             <text class="message-text">{{item.content}}</text>
-            <view wx:if="{{item.typing}}" class="typing-indicator">
+            <!-- Only show the typing indicator if content is empty and typing is true -->
+            <view wx:if="{{item.typing && !item.content}}" class="typing-indicator">
               <view class="dot"></view>
               <view class="dot"></view>
               <view class="dot"></view>
@@ -29,13 +30,10 @@
         </block>
       </view>
     </block>
-    <!-- Loading indicator for AI response -->
-    <view wx:if="{{loading}}" class="ai-loading">
-      <view class="loading-center">
-        <text>AI 正在思考...</text>
-      </view>
-    </view>
-  </scroll-view>
+</scroll-view>
+
+
+
 
   <!-- Input area -->
   <view class="input-container" style="position:fixed;bottom:0;left:0;width:100%;background:#fafafa;z-index:10;display:flex;align-items:flex-end;padding:10rpx 0;">
