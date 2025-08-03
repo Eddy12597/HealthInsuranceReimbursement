@@ -1,19 +1,40 @@
-// Mock backend for drugs API
+// Backend for drugs API using medicine_database.json
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 const app = express();
 const port = 4000;
 
 app.use(cors());
 app.use(express.json());
 
-// Mock drug data
-const drugs = [
-  { name: '阿莫西林', rate: 80, desc: '医保报销80%' },
-  { name: '布洛芬', rate: 70, desc: '医保报销70%' },
-  { name: '头孢克肟', rate: 85, desc: '医保报销85%' },
-  { name: '氯雷他定', rate: 60, desc: '医保报销60%' }
-];
+// Load medicine database from JSON file
+let medicineDatabase = [];
+try {
+  const databasePath = path.join(__dirname, '../../medicine_database.json');
+  const databaseContent = fs.readFileSync(databasePath, 'utf8');
+  medicineDatabase = JSON.parse(databaseContent);
+  console.log('Medicine database loaded successfully');
+} catch (error) {
+  console.error('Error loading medicine database:', error);
+  medicineDatabase = { drug_categories: [] };
+}
+
+// Helper function to flatten all drugs from all categories
+function getAllDrugs() {
+  const allDrugs = [];
+  medicineDatabase.drug_categories.forEach(category => {
+    category.drugs.forEach(drug => {
+      allDrugs.push({
+        ...drug,
+        category: category.药品分类,
+        categoryCode: category.药品分类代码
+      });
+    });
+  });
+  return allDrugs;
+}
 
 // Mock user data storage
 const users = new Map();
@@ -74,25 +95,86 @@ app.get('/user/:openid', (req, res) => {
 
 // GET /drugs - 获取药品列表
 app.get('/drugs', (req, res) => {
-  res.json({ data: drugs });
+  const allDrugs = getAllDrugs();
+  res.json({ data: allDrugs });
+});
+
+// GET /drugs/categories - 获取药品分类列表
+app.get('/drugs/categories', (req, res) => {
+  const categories = medicineDatabase.drug_categories.map(category => ({
+    code: category.药品分类代码,
+    name: category.药品分类,
+    drugCount: category.drugs.length
+  }));
+  res.json({ data: categories });
+});
+
+// GET /drugs/category/:code - 获取特定分类的药品
+app.get('/drugs/category/:code', (req, res) => {
+  const { code } = req.params;
+  const category = medicineDatabase.drug_categories.find(cat => cat.药品分类代码 === code);
+  
+  if (category) {
+    res.json({ data: category.drugs });
+  } else {
+    res.status(404).json({ error: '未找到该药品分类' });
+  }
 });
 
 // GET /drug/detail - 获取药品详情
 app.get('/drug/detail', (req, res) => {
   const { name } = req.query;
-  const drug = drugs.find(d => d.name === name);
+  const allDrugs = getAllDrugs();
+  const drug = allDrugs.find(d => d.name === name);
+  
   if (drug) {
+    // Calculate reimbursement rate based on drug type (甲/乙)
+    let rate = 0;
+    let desc = '';
+    
+    if (drug.type === '甲') {
+      rate = 80; // 甲类药品100%报销
+      desc = '甲类药品，医保报销80%';
+    } else if (drug.type === '乙') {
+      rate = 60; // 乙类药品80%报销 (示例比例)
+      desc = '乙类药品，医保报销60%';
+    } else {
+      rate = 0; // 其他类型不报销
+      desc = '该药品不在医保报销范围内';
+    }
+    
     res.json({
       name: drug.name,
-      rate: drug.rate,
-      self: 100 - drug.rate,
-      desc: drug.desc
+      type: drug.type,
+      dosageForm: drug.剂型,
+      category: drug.category,
+      categoryCode: drug.categoryCode,
+      rate: rate,
+      self: 100 - rate,
+      desc: desc,
+      notes: drug.备注
     });
   } else {
     res.status(404).json({ error: '未找到该药品' });
   }
 });
 
+// GET /drug/search - 搜索药品
+app.get('/drug/search', (req, res) => {
+  const { query } = req.query;
+  if (!query) {
+    return res.status(400).json({ error: '搜索关键词不能为空' });
+  }
+  
+  const allDrugs = getAllDrugs();
+  const results = allDrugs.filter(drug => 
+    drug.name.toLowerCase().includes(query.toLowerCase()) ||
+    drug.category.toLowerCase().includes(query.toLowerCase())
+  );
+  
+  res.json({ data: results });
+});
+
 app.listen(port, () => {
-  console.log(`Mock drug backend running at http://localhost:${port}`);
+  console.log(`Medicine database backend running at http://localhost:${port}`);
 });
