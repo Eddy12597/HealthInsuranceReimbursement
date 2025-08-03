@@ -1,6 +1,42 @@
 const api = require('../../config.js').DEEPSEEK_API_KEY;
 
-const engineered_prompt = '你是一个乐于助人的AI助手。请用简洁、直接的方式回答用户的问题，保持回答专业但简明扼要。回答尽量控制在3句话以内，除非用户明确要求详细解释。'
+// Load medicine database
+const medicineDatabase = {
+  "drug_categories": [
+    {
+      "药品分类代码": "XA01",
+      "药品分类": "口腔科制剂",
+      "drugs": [
+        {
+          "number": "1",
+          "type": "甲",
+          "name": "复方硼砂",
+          "剂型": "外用液体剂",
+          "备注": "N/A"
+        },
+        {
+          "number": "2", 
+          "type": "乙",
+          "name": "糠甾醇",
+          "剂型": "口服常释剂型",
+          "备注": "N/A"
+        }
+      ]
+    }
+  ]
+};
+
+const engineered_prompt = `你是一个专业的医疗助手，专门帮助用户了解药品信息和医保报销政策。
+
+重要信息：
+- 甲类药品：医保报销80%
+- 乙类药品：医保报销60%  
+- 丙类药品：医保报销0%（完全自费）
+
+药品数据库信息：
+${JSON.stringify(medicineDatabase, null, 2)}
+
+请用简洁、直接的方式回答用户的问题，保持回答专业但简明扼要。回答尽量控制在3句话以内，除非用户明确要求详细解释。当用户询问药品信息时，请参考上述数据库中的信息。`
 
 Page({
   data: {
