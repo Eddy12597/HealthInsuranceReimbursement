@@ -18,5 +18,4 @@
 view, text, image, button {
     border: 1px solid red;
 }
-@import 'app-wxa-auto-dark.wxss'
 
