@@ -64,26 +64,26 @@ node server_favorites.js
 ### Todos:
 
 1. Find API endpoint (should have drug name, drug reimbursement rate, and a short description for extra info).
-    Pipeline:
-    PDF to Text Conversion
-      If PDFs are digital/native, extract text directly (e.g., pdfplumber, PyMuPDF).
-      If PDFs are scanned images, apply OCR (e.g., OCRmyPDF or Tesseract) to convert pages to text.
-   Text Chunking   
-      Split extracted text into manageable chunks aligned with LLM token limits (e.g., 1,000–2,000 tokens per chunk).
-      Chunking can be done by page, section, or semantic breaks.
-   Prompt Design & LLM Querying  
-      Prepare a prompt template specifying the extraction schema (e.g., fields, format, rules).
-      For each chunk, send a prompt + text chunk to the LLM API.
-   Receive parsed JSON or structured text from the LLM.   
-      Post-processing & Validation
-      Validate JSON schema correctness.
-      Aggregate partial results if multiple chunks per document.
-      Apply business logic for consistency checks or missing data.
-   Output Storage     
-      Store final structured JSON data per document/page in database or files.
-   Error Handling & Retries
-      Implement retries on API failures or unexpected output.
-      Log errors and track token usage for cost monitoring.
+    - Pipeline:
+    - PDF to Text Conversion
+      - If PDFs are digital/native, extract text directly (e.g., pdfplumber, PyMuPDF).
+      - If PDFs are scanned images, apply OCR (e.g., OCRmyPDF or Tesseract) to convert pages to text.
+   - Text Chunking   
+      - Split extracted text into manageable chunks aligned with LLM token limits (e.g., 1,000–2,000 tokens per chunk).
+      - Chunking can be done by page, section, or semantic breaks.
+   - Prompt Design & LLM Querying  
+      - Prepare a prompt template specifying the extraction schema (e.g., fields, format, rules).
+      - For each chunk, send a prompt + text chunk to the LLM API.
+   - Receive parsed JSON or structured text from the LLM.   
+      - Post-processing & Validation
+      - Validate JSON schema correctness.
+      - Aggregate partial results if multiple chunks per document.
+      - Apply business logic for consistency checks or missing data.
+   - Output Storage     
+      - Store final structured JSON data per document/page in database or files.
+   - Error Handling & Retries
+      - Implement retries on API failures or unexpected output.
+      - Log errors and track token usage for cost monitoring.
 
 3. Research more about reimbursement rates & relation with insurance plans
 4. Find backend host for favorites storage
