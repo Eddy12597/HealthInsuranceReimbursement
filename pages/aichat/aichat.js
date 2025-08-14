@@ -139,11 +139,11 @@ Page({
         message: userMessage,
         apiKey: api
       },
-      timeout: 15000,
+      timeout: 30000, 
       success: (res) => {
         console.log("Server API Request SUCCESS: ", res);
         
-        // Remove typing indicator immediately
+       
         const messages = this.data.messages.filter(msg => msg.id !== typingMsgId);
         this.setData({ messages });
 
@@ -151,6 +151,13 @@ Page({
         
         if (res.data && res.data.success && res.data.response) {
             aiContent = res.data.response;
+        } else if (res.data && res.data.error) {
+            // Handle specific error messages from server
+            if (res.data.error.includes('timeout')) {
+                aiContent = '请求超时，请稍后再试或尝试问一个更具体的问题。';
+            } else {
+                aiContent = `服务器错误: ${res.data.error}`;
+            }
         }
 
         const aiResponse = {
@@ -172,9 +179,19 @@ Page({
       fail: (err) => {
         console.log("API Request FAILED: ", err);
         const messages = this.data.messages.filter(msg => msg.id !== typingMsgId);
+        
+        let errorMessage = '服务器繁忙，请稍后再试';
+        
+        // Handle specific error types
+        if (err.errMsg && err.errMsg.includes('timeout')) {
+            errorMessage = '请求超时，请稍后再试。如果问题持续，请尝试问一个更具体的问题。';
+        } else if (err.errMsg && err.errMsg.includes('fail')) {
+            errorMessage = '网络连接失败，请检查网络连接后重试。';
+        }
+        
         const aiResponse = {
           role: 'assistant',
-          content: '服务器繁忙，请稍后再试',
+          content: errorMessage,
           id: Date.now()
         };
         this.setData({ 

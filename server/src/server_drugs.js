@@ -217,7 +217,26 @@ app.post('/deepseek/query', async (req, res) => {
   }
 
   try {
-    // Create the context with CSV data and reimbursement rules
+    // Optimize: Only send relevant medicines instead of all 1601+
+    // Look for medicines mentioned in the user's message
+    const relevantMedicines = [];
+    const userMessageLower = message.toLowerCase();
+    
+    // Find medicines that match the user's query
+    csvMedicineData.forEach(med => {
+      if (userMessageLower.includes(med.medicine_name.toLowerCase()) ||
+          userMessageLower.includes(med.reimbursement_class) ||
+          userMessageLower.includes(med.uses.toLowerCase())) {
+        relevantMedicines.push(med);
+      }
+    });
+    
+    // If no specific medicines found, send a sample (first 50) instead of all 1601+
+    const medicinesToSend = relevantMedicines.length > 0 ? 
+      relevantMedicines : 
+      csvMedicineData.slice(0, 50);
+    
+    // Create the context with relevant CSV data and reimbursement rules
     const context = `你是一个专业的医疗助手，专门帮助用户了解药品信息和医保报销政策。
 
 重要报销规则：
@@ -225,10 +244,12 @@ app.post('/deepseek/query', async (req, res) => {
 - 乙类药品：医保报销60%  
 - 其他类型：医保报销0%（完全自费）
 
-药品数据库信息（包含${csvMedicineData.length}种药品）：
-${csvMedicineData.map(med => 
+药品数据库信息（包含${medicinesToSend.length}种相关药品）：
+${medicinesToSend.map(med => 
   `${med.medicine_name} - ${med.reimbursement_class}类 - ${med.uses} - 报销比例: ${getReimbursementRate(med.reimbursement_class)}%`
 ).join('\n')}
+
+${relevantMedicines.length === 0 ? '注意：这是药品数据库的样本数据。如需查询其他药品，请提供具体药品名称。' : ''}
 
 请用简洁、直接的方式回答用户的问题，保持回答专业但简明扼要。回答尽量控制在3句话以内，除非用户明确要求详细解释。当用户询问药品信息时，请参考上述数据库中的信息。`;
 
@@ -249,14 +270,16 @@ ${csvMedicineData.map(med =>
       max_tokens: 1000
     };
 
-    // Make request to DeepSeek API
+    // Make request to DeepSeek API with increased timeout
     const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
-      body: JSON.stringify(deepseekRequest)
+      body: JSON.stringify(deepseekRequest),
+      // Increase timeout for large contexts
+      signal: AbortSignal.timeout(30000) // 30 seconds
     });
 
     if (!response.ok) {
@@ -268,16 +291,28 @@ ${csvMedicineData.map(med =>
     res.json({
       success: true,
       response: data.choices[0].message.content,
-      usage: data.usage
+      usage: data.usage,
+      medicinesSearched: relevantMedicines.length,
+      totalMedicines: csvMedicineData.length
     });
 
   } catch (error) {
     console.error('DeepSeek API error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get response from DeepSeek API',
-      details: error.message
-    });
+    
+    // Handle timeout specifically
+    if (error.name === 'TimeoutError') {
+      res.status(408).json({
+        success: false,
+        error: 'Request timeout - please try again',
+        details: 'The request took too long to process. Try asking a more specific question.'
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get response from DeepSeek API',
+        details: error.message
+      });
+    }
   }
 });
 
