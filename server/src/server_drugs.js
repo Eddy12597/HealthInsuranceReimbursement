@@ -1,39 +1,64 @@
-// Backend for drugs API using medicine_database.json
+// Backend for drugs API using CSV medicine data
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const fetch = require('node-fetch');
 const app = express();
 const port = 4000;
 
 app.use(cors());
 app.use(express.json());
 
-// Load medicine database from JSON file
-let medicineDatabase = [];
+// Load CSV medicine reimbursement data
+let csvMedicineData = [];
 try {
-  const databasePath = path.join(__dirname, '../../medicine_database.json');
-  const databaseContent = fs.readFileSync(databasePath, 'utf8');
-  medicineDatabase = JSON.parse(databaseContent);
-  console.log('Medicine database loaded successfully');
+  const csvPath = path.join(__dirname, '../Data/medical_reimbursement_western_medicine.csv');
+  const csvContent = fs.readFileSync(csvPath, 'utf8');
+  
+  // Parse CSV content (simple parsing for comma-separated values)
+  const lines = csvContent.split('\n').filter(line => line.trim());
+  const headers = lines[0].split(',');
+  
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(',');
+    if (values.length >= 3) {
+      csvMedicineData.push({
+        medicine_name: values[0],
+        reimbursement_class: values[1],
+        uses: values[2]
+      });
+    }
+  }
+  
+  console.log(`CSV medicine data loaded successfully: ${csvMedicineData.length} medicines`);
 } catch (error) {
-  console.error('Error loading medicine database:', error);
-  medicineDatabase = { drug_categories: [] };
+  console.error('Error loading CSV medicine data:', error);
+  csvMedicineData = [];
 }
 
-// Helper function to flatten all drugs from all categories
+// Helper function to get reimbursement rate based on class
+function getReimbursementRate(reimbursementClass) {
+  switch (reimbursementClass) {
+    case '甲':
+      return 80; // 甲类药品报销80%
+    case '乙':
+      return 60; // 乙类药品报销60%
+    default:
+      return 0;  // 其他类型不报销
+  }
+}
+
+// Helper function to get all drugs from CSV data
 function getAllDrugs() {
-  const allDrugs = [];
-  medicineDatabase.drug_categories.forEach(category => {
-    category.drugs.forEach(drug => {
-      allDrugs.push({
-        ...drug,
-        category: category.药品分类,
-        categoryCode: category.药品分类代码
-      });
-    });
-  });
-  return allDrugs;
+  return csvMedicineData.map(med => ({
+    name: med.medicine_name,
+    type: med.reimbursement_class,
+    category: med.uses,
+    rate: getReimbursementRate(med.reimbursement_class),
+    self: 100 - getReimbursementRate(med.reimbursement_class),
+    desc: `${med.reimbursement_class}类药品，医保报销${getReimbursementRate(med.reimbursement_class)}%`
+  }));
 }
 
 // Mock user data storage
@@ -101,21 +126,35 @@ app.get('/drugs', (req, res) => {
 
 // GET /drugs/categories - 获取药品分类列表
 app.get('/drugs/categories', (req, res) => {
-  const categories = medicineDatabase.drug_categories.map(category => ({
-    code: category.药品分类代码,
-    name: category.药品分类,
-    drugCount: category.drugs.length
+  // Create categories from CSV data based on uses field
+  const categories = {};
+  csvMedicineData.forEach(drug => {
+    if (!categories[drug.uses]) {
+      categories[drug.uses] = 0;
+    }
+    categories[drug.uses]++;
+  });
+  
+  const categoryList = Object.entries(categories).map(([name, count]) => ({
+    code: name.substring(0, 4).toUpperCase(),
+    name: name,
+    drugCount: count
   }));
-  res.json({ data: categories });
+  
+  res.json({ data: categoryList });
 });
 
 // GET /drugs/category/:code - 获取特定分类的药品
 app.get('/drugs/category/:code', (req, res) => {
   const { code } = req.params;
-  const category = medicineDatabase.drug_categories.find(cat => cat.药品分类代码 === code);
   
-  if (category) {
-    res.json({ data: category.drugs });
+  // Find drugs by category name (code is actually the category name)
+  const drugsInCategory = csvMedicineData.filter(drug => 
+    drug.uses === code
+  );
+  
+  if (drugsInCategory.length > 0) {
+    res.json({ data: drugsInCategory });
   } else {
     res.status(404).json({ error: '未找到该药品分类' });
   }
@@ -124,35 +163,30 @@ app.get('/drugs/category/:code', (req, res) => {
 // GET /drug/detail - 获取药品详情
 app.get('/drug/detail', (req, res) => {
   const { name } = req.query;
-  const allDrugs = getAllDrugs();
-  const drug = allDrugs.find(d => d.name === name);
+  const drug = csvMedicineData.find(d => d.medicine_name === name);
   
   if (drug) {
-    // Calculate reimbursement rate based on drug type (甲/乙)
-    let rate = 0;
+    const rate = getReimbursementRate(drug.reimbursement_class);
     let desc = '';
     
-    if (drug.type === '甲') {
-      rate = 80; // 甲类药品100%报销
+    if (drug.reimbursement_class === '甲') {
       desc = '甲类药品，医保报销80%';
-    } else if (drug.type === '乙') {
-      rate = 60; // 乙类药品80%报销 (示例比例)
+    } else if (drug.reimbursement_class === '乙') {
       desc = '乙类药品，医保报销60%';
     } else {
-      rate = 0; // 其他类型不报销
       desc = '该药品不在医保报销范围内';
     }
     
     res.json({
-      name: drug.name,
-      type: drug.type,
-      dosageForm: drug.剂型,
-      category: drug.category,
-      categoryCode: drug.categoryCode,
+      name: drug.medicine_name,
+      type: drug.reimbursement_class,
+      dosageForm: drug.uses,
+      category: drug.uses,
+      categoryCode: 'N/A',
       rate: rate,
       self: 100 - rate,
       desc: desc,
-      notes: drug.备注
+      notes: 'N/A'
     });
   } else {
     res.status(404).json({ error: '未找到该药品' });
@@ -166,13 +200,99 @@ app.get('/drug/search', (req, res) => {
     return res.status(400).json({ error: '搜索关键词不能为空' });
   }
   
-  const allDrugs = getAllDrugs();
-  const results = allDrugs.filter(drug => 
-    drug.name.toLowerCase().includes(query.toLowerCase()) ||
-    drug.category.toLowerCase().includes(query.toLowerCase())
+  const results = csvMedicineData.filter(drug => 
+    drug.medicine_name.toLowerCase().includes(query.toLowerCase()) ||
+    drug.uses.toLowerCase().includes(query.toLowerCase())
   );
   
   res.json({ data: results });
+});
+
+// POST /deepseek/query - DeepSeek API endpoint with CSV context
+app.post('/deepseek/query', async (req, res) => {
+  const { message, apiKey } = req.body;
+  
+  if (!message || !apiKey) {
+    return res.status(400).json({ error: 'Message and API key are required' });
+  }
+
+  try {
+    // Create the context with CSV data and reimbursement rules
+    const context = `你是一个专业的医疗助手，专门帮助用户了解药品信息和医保报销政策。
+
+重要报销规则：
+- 甲类药品：医保报销80%
+- 乙类药品：医保报销60%  
+- 其他类型：医保报销0%（完全自费）
+
+药品数据库信息（包含${csvMedicineData.length}种药品）：
+${csvMedicineData.map(med => 
+  `${med.medicine_name} - ${med.reimbursement_class}类 - ${med.uses} - 报销比例: ${getReimbursementRate(med.reimbursement_class)}%`
+).join('\n')}
+
+请用简洁、直接的方式回答用户的问题，保持回答专业但简明扼要。回答尽量控制在3句话以内，除非用户明确要求详细解释。当用户询问药品信息时，请参考上述数据库中的信息。`;
+
+    // Prepare the request to DeepSeek
+    const deepseekRequest = {
+      model: "deepseek-chat",
+      messages: [
+        {
+          role: "system",
+          content: context
+        },
+        {
+          role: "user",
+          content: message
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 1000
+    };
+
+    // Make request to DeepSeek API
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(deepseekRequest)
+    });
+
+    if (!response.ok) {
+      throw new Error(`DeepSeek API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    res.json({
+      success: true,
+      response: data.choices[0].message.content,
+      usage: data.usage
+    });
+
+  } catch (error) {
+    console.error('DeepSeek API error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get response from DeepSeek API',
+      details: error.message
+    });
+  }
+});
+
+// GET /csv-data - Get CSV medicine data for debugging
+app.get('/csv-data', (req, res) => {
+  res.json({
+    success: true,
+    count: csvMedicineData.length,
+    data: csvMedicineData.slice(0, 20), // Return first 20 for preview
+    reimbursementRules: {
+      '甲': '80%',
+      '乙': '60%',
+      '其他': '0%'
+    }
+  });
 });
 
 app.listen(port, () => {

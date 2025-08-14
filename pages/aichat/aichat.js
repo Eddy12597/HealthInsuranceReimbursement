@@ -1,42 +1,12 @@
 const api = require('../../config.js').DEEPSEEK_API_KEY;
 
-// Load medicine database
-const medicineDatabase = {
-  "drug_categories": [
-    {
-      "药品分类代码": "XA01",
-      "药品分类": "口腔科制剂",
-      "drugs": [
-        {
-          "number": "1",
-          "type": "甲",
-          "name": "复方硼砂",
-          "剂型": "外用液体剂",
-          "备注": "N/A"
-        },
-        {
-          "number": "2", 
-          "type": "乙",
-          "name": "糠甾醇",
-          "剂型": "口服常释剂型",
-          "备注": "N/A"
-        }
-      ]
-    }
-  ]
-};
+// Remove the hardcoded medicine database since we'll get it from the server
+// const medicineDatabase = { ... } - REMOVED
 
-const engineered_prompt = `你是一个专业的医疗助手，专门帮助用户了解药品信息和医保报销政策。
+// Updated prompt that will be enhanced by server with CSV data
+const basePrompt = `你是一个专业的医疗助手，专门帮助用户了解药品信息和医保报销政策。
 
-重要信息：
-- 甲类药品：医保报销80%
-- 乙类药品：医保报销60%  
-- 丙类药品：医保报销0%（完全自费）
-
-药品数据库信息：
-${JSON.stringify(medicineDatabase, null, 2)}
-
-请用简洁、直接的方式回答用户的问题，保持回答专业但简明扼要。回答尽量控制在3句话以内，除非用户明确要求详细解释。当用户询问药品信息时，请参考上述数据库中的信息。`
+请用简洁、直接的方式回答用户的问题，保持回答专业但简明扼要。回答尽量控制在3句话以内，除非用户明确要求详细解释。`;
 
 Page({
   data: {
@@ -150,52 +120,28 @@ Page({
     this.addMessage(typingMessage);
     let typingMsgId = typingMessage.id;
     
-    // Optimize message history - only send last 5 messages to reduce payload
-    const recentMessages = this.data.messages
-      .filter(msg => !msg.typing)
-      .slice(-5) // Only last 5 messages
-      .map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
+    // No need to send conversation history since server handles context
     
-    console.log('Making API request with data:', {
-      model: 'deepseek-chat',
-      messages: [
-        { role: 'system', content: engineered_prompt },
-        ...recentMessages,
-        { role: 'user', content: userMessage }
-      ],
-      temperature: 0.7,
-      max_tokens: 150
-    });
+    console.log('Making request to server with message:', userMessage);
     
     console.log('API Key (first 10 chars):', api ? api.substring(0, 10) + '...' : 'undefined');
     
-    console.log('About to make wx.request...');
+    console.log('About to make wx.request to server...');
     
-    // Use the traditional callback approach for wx.request
+    // Call our server endpoint which includes CSV data and calls DeepSeek
     const requestTask = wx.request({
-      url: 'https://api.deepseek.com/chat/completions',
+      url: 'http://localhost:4000/deepseek/query',
       method: 'POST',
       header: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${api}`,
       },
       data: {
-        model: 'deepseek-chat',
-        messages: [
-          { role: 'system', content: engineered_prompt },
-          ...recentMessages,
-          { role: 'user', content: userMessage }
-        ],
-        temperature: 0.7,
-        max_tokens: 150,
-        stream: false
+        message: userMessage,
+        apiKey: api
       },
       timeout: 15000,
       success: (res) => {
-        console.log("API Request SUCCESS: ", res);
+        console.log("Server API Request SUCCESS: ", res);
         
         // Remove typing indicator immediately
         const messages = this.data.messages.filter(msg => msg.id !== typingMsgId);
@@ -203,8 +149,8 @@ Page({
 
         let aiContent = '服务器繁忙，请稍后再试';
         
-        if (res.data && res.data.choices && res.data.choices[0] && res.data.choices[0].message) {
-            aiContent = res.data.choices[0].message.content;
+        if (res.data && res.data.success && res.data.response) {
+            aiContent = res.data.response;
         }
 
         const aiResponse = {
